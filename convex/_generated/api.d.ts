@@ -8,7 +8,13 @@
  * @module
  */
 
+import type * as admin from "../admin.js";
+import type * as domain from "../domain.js";
+import type * as evaluations from "../evaluations.js";
+import type * as leaderboard from "../leaderboard.js";
 import type * as myFunctions from "../myFunctions.js";
+import type * as submissions from "../submissions.js";
+import type * as users from "../users.js";
 
 import type {
   ApiFromModules,
@@ -17,7 +23,13 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  admin: typeof admin;
+  domain: typeof domain;
+  evaluations: typeof evaluations;
+  leaderboard: typeof leaderboard;
   myFunctions: typeof myFunctions;
+  submissions: typeof submissions;
+  users: typeof users;
 }>;
 
 /**
