@@ -5,78 +5,207 @@ import { UserButton, SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { Footer } from "@/components/footer";
+import {
+  LayoutDashboard,
+  FolderOpen,
+  BarChart3,
+  Trophy,
+  ShieldCheck,
+  Settings,
+  HelpCircle,
+  Sparkles,
+  Menu,
+  X,
+} from "lucide-react";
+import { useState } from "react";
 
-const links = [
-  { href: "/", label: "Home", bracket: "[Home]" },
-  { href: "/dashboard", label: "Dashboard", bracket: "[Dashboard]" },
-  { href: "/submit", label: "Submit", bracket: "[Submit]" },
-  { href: "/leaderboard", label: "Leaderboard", bracket: "[Leaderboard]" },
+const sidebarLinks = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/submit", label: "Projects", icon: FolderOpen },
+  { href: "/dashboard", label: "Evaluation", icon: BarChart3 },
+  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
+  { href: "/admin", label: "Admin", icon: ShieldCheck },
+  { href: "#", label: "Settings", icon: Settings },
+  { href: "#", label: "Help", icon: HelpCircle },
 ] as const;
+
+const landingNavLinks = [
+  { href: "/submit", label: "Submit" },
+  { href: "/dashboard", label: "Dashboard" },
+] as const;
+
+function isInnerPage(pathname: string) {
+  return (
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/submit") ||
+    pathname.startsWith("/leaderboard") ||
+    pathname.startsWith("/admin")
+  );
+}
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const inner = isInnerPage(pathname);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  return (
-    <div className="min-h-screen bg-grid">
-      <header className="sticky top-0 z-40 border-b-2 border-border/80 bg-background/85 backdrop-blur-sm">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-0 sm:px-6">
-          <div className="flex items-center gap-0">
-            <div className="flex items-center gap-1.5 py-3 pr-4 border-r border-border/60">
-              <span className="flex gap-1.5">
-                <span className="h-3 w-3 rounded-full bg-terminal-red/80" />
-                <span className="h-3 w-3 rounded-full bg-terminal-amber/80" />
-                <span className="h-3 w-3 rounded-full bg-terminal-green/80" />
-              </span>
-            </div>
-            <Link
-              href="/"
-              className="ml-4 font-mono text-lg font-bold tracking-tight text-foreground hover:text-primary transition-colors"
-            >
-              <span className="text-primary">$</span> HackJudge
+  if (inner) {
+    return (
+      <div className="flex min-h-screen">
+        {/* Mobile sidebar toggle */}
+        <button
+          className="fixed left-4 top-4 z-50 rounded-xl bg-[#151926] p-2 text-muted-foreground md:hidden"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+        >
+          {sidebarOpen ? (
+            <X className="h-5 w-5" />
+          ) : (
+            <Menu className="h-5 w-5" />
+          )}
+        </button>
+
+        {/* Sidebar overlay for mobile */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 z-30 bg-black/60 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Sidebar */}
+        <aside
+          className={cn(
+            "fixed inset-y-0 left-0 z-40 flex w-[220px] flex-col bg-[#0f131e] transition-transform duration-300 md:static md:translate-x-0",
+            sidebarOpen ? "translate-x-0" : "-translate-x-full",
+          )}
+        >
+          {/* Branding */}
+          <div className="px-5 pt-6 pb-2">
+            <Link href="/" className="group flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-container">
+                <Sparkles className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold leading-none text-foreground">
+                  HackJudge
+                </p>
+                <p className="mt-0.5 text-[10px] tracking-wider text-muted-foreground uppercase">
+                  AI Judging Engine
+                </p>
+              </div>
             </Link>
           </div>
-          <nav className="hidden items-center gap-0.5 md:flex">
-            {links.map((link) => (
+
+          {/* Navigation */}
+          <nav className="mt-4 flex flex-1 flex-col gap-0.5 px-3">
+            {sidebarLinks.map((link) => {
+              const Icon = link.icon;
+              const active = pathname === link.href;
+              return (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  onClick={() => setSidebarOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all",
+                    active
+                      ? "bg-gradient-to-r from-primary/20 to-secondary/10 text-foreground"
+                      : "text-muted-foreground hover:bg-[#151926] hover:text-foreground",
+                  )}
+                >
+                  <Icon
+                    className={cn(
+                      "h-[18px] w-[18px]",
+                      active && "text-primary",
+                    )}
+                  />
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* User area at bottom */}
+          <div className="border-t border-border/20 px-4 py-4">
+            <SignedIn>
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: "h-8 w-8",
+                  },
+                }}
+              />
+            </SignedIn>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <Button size="sm" variant="outline" className="w-full text-xs">
+                  Sign in
+                </Button>
+              </SignInButton>
+            </SignedOut>
+          </div>
+        </aside>
+
+        {/* Main content */}
+        <div className="flex min-h-screen flex-1 flex-col">
+          <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-7 sm:px-8 md:pl-8">
+            {children}
+          </main>
+          <Footer />
+        </div>
+      </div>
+    );
+  }
+
+  /* ─── Landing page layout (top nav) ─── */
+  return (
+    <div className="flex min-h-screen flex-col">
+      <header className="sticky top-0 z-40 bg-[#0a0e18]/80 backdrop-blur-xl">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-6 py-4">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-lg font-semibold tracking-tight text-foreground"
+          >
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-container">
+              <Sparkles className="h-4 w-4 text-white" />
+            </div>
+            HackJudge
+          </Link>
+
+          <nav className="hidden items-center gap-6 md:flex">
+            {landingNavLinks.map((link) => (
               <Link
-                key={link.href}
+                key={link.label}
                 href={link.href}
-                className={cn(
-                  "font-mono text-xs px-3 py-3 transition-all border-b-2 -mb-0.5",
-                  pathname === link.href
-                    ? "text-primary border-primary bg-primary/5"
-                    : "text-muted-foreground border-transparent hover:text-foreground hover:border-border",
-                )}
+                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
-                {pathname === link.href ? link.bracket : link.label}
+                {link.label}
               </Link>
             ))}
           </nav>
-          <div className="flex items-center gap-2">
-            <span className="hidden font-mono text-xs text-muted-foreground sm:inline">
-              $
-            </span>
-            <ThemeToggle />
+
+          <div className="flex items-center gap-3">
             <SignedOut>
               <SignInButton mode="modal">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="font-mono text-xs"
-                >
-                  sign-in
+                <Button size="sm" variant="outline" className="text-xs">
+                  Sign In
                 </Button>
               </SignInButton>
             </SignedOut>
             <SignedIn>
+              <Link href="/dashboard">
+                <Button size="sm" className="text-xs">
+                  Launch Dashboard
+                </Button>
+              </Link>
               <UserButton />
             </SignedIn>
           </div>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6">
-        {children}
-      </main>
+
+      <main className="flex-1">{children}</main>
+      <Footer />
     </div>
   );
 }

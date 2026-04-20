@@ -4,7 +4,7 @@ export function Card({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
-        "rounded-2xl border border-border/70 bg-card/80 p-5 shadow-[0_8px_40px_-24px_var(--color-foreground)]",
+        "glass-panel ambient-border rounded-2xl bg-card/70 p-5 shadow-[0_28px_52px_-34px_color-mix(in_oklab,var(--color-primary)_70%,transparent)]",
         className,
       )}
       {...props}

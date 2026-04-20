@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
+import { Sora, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import ConvexClientProvider from "@/components/ConvexClientProvider";
 import { ClerkProvider } from "@clerk/nextjs";
@@ -8,8 +8,8 @@ import { AppShell } from "@/components/app-shell";
 import { AuthSync } from "@/components/auth-sync";
 import { ToastProvider } from "@/components/toast-provider";
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
+const sora = Sora({
+  variable: "--font-sans",
   subsets: ["latin"],
 });
 
@@ -36,7 +36,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn("font-sans", spaceGrotesk.variable, ibmPlexMono.variable)}
+      className={cn("font-sans", sora.variable, ibmPlexMono.variable)}
     >
       <body className="antialiased">
         <ClerkProvider dynamic>

@@ -3,183 +3,201 @@
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardDescription, CardTitle } from "@/components/ui/card";
-import { categoryLabels, scoreKeys, scoreLabels } from "@/lib/hackjudge";
+import { Button } from "@/components/ui/button";
+import { categoryLabels, scoreKeys } from "@/lib/hackjudge";
 import {
-  Code2,
-  User,
-  FileCode,
-  CheckCircle,
+  CheckCircle2,
+  Loader2,
+  Sparkles,
+  UserRound,
   XCircle,
-  Loader,
+  ArrowRight,
+  TrendingUp,
 } from "lucide-react";
+import Link from "next/link";
 
 function statusTone(status: string) {
   if (status === "completed")
-    return "border-terminal-green/50 bg-terminal-green/10 text-terminal-green";
+    return "bg-emerald-500/15 text-emerald-300 border-emerald-400/25";
   if (status === "fallback")
-    return "border-terminal-amber/50 bg-terminal-amber/10 text-terminal-amber";
+    return "bg-amber-500/15 text-amber-300 border-amber-400/25";
   if (status === "failed")
-    return "border-destructive/50 bg-destructive/10 text-destructive";
-  return "border-primary/50 bg-primary/10 text-primary";
+    return "bg-rose-500/15 text-rose-300 border-rose-400/25";
+  return "bg-primary/20 text-primary border-primary/30";
 }
 
 function StatusIcon({ status }: { status: string }) {
   if (status === "completed")
-    return <CheckCircle className="h-4 w-4 text-terminal-green" />;
-  if (status === "failed")
-    return <XCircle className="h-4 w-4 text-destructive" />;
-  if (status === "fallback")
-    return <Loader className="h-4 w-4 text-terminal-amber" />;
-  return <Loader className="h-4 w-4 animate-spin text-primary" />;
+    return <CheckCircle2 className="h-4 w-4 text-emerald-300" />;
+  if (status === "failed") return <XCircle className="h-4 w-4 text-rose-300" />;
+  return <Loader2 className="h-4 w-4 animate-spin text-primary" />;
 }
 
 export default function DashboardPage() {
   const me = useQuery(api.users.getCurrentUser, {});
   const rows = useQuery(api.submissions.listMySubmissions, {});
 
+  const totalPoints =
+    rows?.reduce((sum, r) => sum + (r.evaluation?.effectiveTotal ?? 0), 0) ?? 0;
+
   return (
     <div className="space-y-6">
-      <section className="rounded-none border-2 border-border/80 bg-card/60">
-        <div className="border-b border-border/50 bg-card/40 px-4 py-2">
-          <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
-            <User className="h-3.5 w-3.5" />
-            <span>[dashboard]</span>
+      {/* Welcome header */}
+      <section className="rounded-2xl bg-[#151926] p-6 sm:p-8">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight">
+              Welcome back
+              {me?.name ? `, ${me.name}` : ", Architect"}
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              You have {rows?.length ?? 0} project
+              {(rows?.length ?? 0) !== 1 ? "s" : ""} currently under evaluation.
+            </p>
           </div>
-        </div>
-        <div className="p-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded border border-border/60 bg-background">
-              <User className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-black tracking-tight">
-                Welcome back
-                <span className="text-primary">
-                  {me?.name ? `, ${me.name}` : ""}
-                </span>
-              </h1>
-              <p className="font-mono text-xs text-muted-foreground">
-                &gt;_ Track your submissions and review AI score breakdowns.
-              </p>
-            </div>
+          <div className="flex items-center gap-2 rounded-xl bg-[#0f131e] px-3 py-2">
+            <UserRound className="h-4 w-4 text-secondary" />
+            <span className="text-sm text-muted-foreground">
+              {me?.email ?? "Signed in"}
+            </span>
           </div>
         </div>
       </section>
 
-      {!rows && (
-        <div className="rounded-none border-2 border-border/80 bg-card/60 p-5">
-          <p className="font-mono text-sm text-muted-foreground">
-            <Loader className="mr-2 inline h-4 w-4 animate-spin" />
-            Loading your submissions...
+      {/* Stats & CTA Row */}
+      <div className="grid gap-5 md:grid-cols-2">
+        {/* Current Progress */}
+        <div className="rounded-2xl bg-[#151926] p-6">
+          <p className="text-xs tracking-widest text-muted-foreground uppercase">
+            Current Progress
           </p>
-        </div>
-      )}
-      {rows && rows.length === 0 && (
-        <div className="rounded-none border-2 border-border/80 bg-card/60">
-          <div className="border-b border-border/50 bg-card/40 px-4 py-2">
-            <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
-              <FileCode className="h-3.5 w-3.5" />
-              <span>[empty]</span>
-            </div>
+          <div className="mt-4 flex items-end gap-3">
+            <p className="text-5xl font-semibold text-foreground">
+              {totalPoints.toFixed(0)}
+            </p>
+            <p className="mb-1 text-sm text-muted-foreground">
+              Total Points Earned
+            </p>
           </div>
-          <div className="p-5">
-            <CardTitle>No submissions yet</CardTitle>
-            <CardDescription>
-              Create your first hack project entry in the Submit page.
-            </CardDescription>
+          <div className="mt-4 flex items-center gap-2 text-xs text-emerald-400">
+            <TrendingUp className="h-3.5 w-3.5" />
+            Across {rows?.length ?? 0} submissions
           </div>
         </div>
-      )}
 
-      <div className="grid gap-4">
-        {rows?.map(({ submission, evaluation }) => (
-          <Card
-            key={submission._id}
-            className="rounded-none border-2 border-border/80 bg-card/60"
-          >
-            <div className="border-b border-border/50 bg-card/40 px-4 py-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
-                  <Code2 className="h-3.5 w-3.5" />
-                  <span>
-                    [{submission.title.toLowerCase().replace(/\s+/g, "-")}]
-                  </span>
+        {/* Ready to ship CTA */}
+        <div className="rounded-2xl bg-gradient-to-br from-primary/15 via-[#151926] to-secondary/10 p-6">
+          <Sparkles className="h-5 w-5 text-secondary" />
+          <h3 className="mt-3 text-lg font-semibold">Ready to ship?</h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Submit your latest build for AI-powered architectural review and
+            score generation.
+          </p>
+          <Link href="/submit" className="mt-5 inline-flex">
+            <Button
+              size="sm"
+              className="bg-gradient-to-r from-primary to-[#8d98ff] text-xs font-medium"
+            >
+              Submit Project
+              <ArrowRight className="ml-1 h-3.5 w-3.5" />
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* Submissions List */}
+      <section>
+        <h2 className="mb-4 text-lg font-semibold">My Submissions</h2>
+
+        {!rows && (
+          <div className="rounded-2xl bg-[#151926] p-5 text-sm text-muted-foreground">
+            <Loader2 className="mr-2 inline h-4 w-4 animate-spin" />
+            Loading your submissions...
+          </div>
+        )}
+
+        {rows && rows.length === 0 && (
+          <div className="rounded-2xl bg-[#151926] p-6 text-center">
+            <p className="text-sm text-muted-foreground">
+              No submissions yet. Head to the Projects page to create your first
+              entry.
+            </p>
+          </div>
+        )}
+
+        <div className="space-y-3">
+          {rows?.map(({ submission, evaluation }) => (
+            <article
+              key={submission._id}
+              className="rounded-2xl bg-[#151926] p-5 transition-colors hover:bg-[#1a1f2d]"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">
+                    {categoryLabels[submission.category]}
+                  </p>
+                  <h3 className="mt-1 text-base font-semibold">
+                    {submission.title}
+                  </h3>
+                  <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
+                    {submission.description}
+                  </p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <StatusIcon status={submission.evaluationStatus} />
-                  <Badge className={statusTone(submission.evaluationStatus)}>
-                    {submission.evaluationStatus}
-                  </Badge>
+                <div className="text-right">
+                  <p className="text-xs text-muted-foreground uppercase tracking-widest">
+                    Judge Score
+                  </p>
+                  {evaluation ? (
+                    <p className="mt-1 text-2xl font-semibold text-primary">
+                      {evaluation.effectiveTotal.toFixed(0)}
+                      <span className="text-sm text-muted-foreground">
+                        /100
+                      </span>
+                    </p>
+                  ) : (
+                    <p className="mt-1 text-2xl font-semibold text-muted-foreground">
+                      —
+                    </p>
+                  )}
                 </div>
               </div>
-            </div>
-            <div className="p-5 space-y-4">
-              <div>
-                <CardTitle className="text-xl">{submission.title}</CardTitle>
-                <CardDescription className="mt-1">
-                  {categoryLabels[submission.category]} •{" "}
-                  {new Date(submission.createdAt).toLocaleDateString()}
-                </CardDescription>
+
+              <div className="mt-3 flex items-center gap-2">
+                <StatusIcon status={submission.evaluationStatus} />
+                <Badge className={statusTone(submission.evaluationStatus)}>
+                  {submission.evaluationStatus}
+                </Badge>
               </div>
 
-              <p className="font-mono text-sm text-muted-foreground border-l-2 border-border/50 pl-3">
-                {submission.description}
-              </p>
-
-              {evaluation ? (
-                <div className="space-y-3">
-                  <div className="rounded border-2 border-terminal-green/30 bg-terminal-green/5 p-3">
-                    <div className="flex items-center justify-between">
-                      <p className="font-mono text-xs uppercase tracking-wider text-terminal-green">
-                        effective_total
-                      </p>
-                      <p className="text-3xl font-black text-terminal-green">
-                        {evaluation.effectiveTotal.toFixed(1)}
-                        <span className="text-sm font-normal text-muted-foreground">
-                          /100
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {evaluation && (
+                <div className="mt-4 space-y-3">
+                  <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-5">
                     {scoreKeys.map((key) => (
-                      <div
-                        key={key}
-                        className="rounded border border-border/60 bg-background/50 p-3"
-                      >
-                        <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                      <div key={key} className="rounded-xl bg-[#0f131e] p-3">
+                        <p className="text-[10px] tracking-wider text-muted-foreground uppercase">
                           {key}
                         </p>
-                        <p className="text-xl font-bold">
+                        <p className="mt-1 text-lg font-semibold">
                           {evaluation.effectiveScores[key].toFixed(1)}
                         </p>
                       </div>
                     ))}
                   </div>
-
-                  <div className="rounded border border-border/60 bg-background/50 p-3">
-                    <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mb-1">
-                      ai_feedback
+                  <div className="rounded-xl bg-[#0f131e] p-4">
+                    <p className="mb-1 inline-flex items-center gap-2 text-[10px] tracking-wider text-muted-foreground uppercase">
+                      <Sparkles className="h-3 w-3 text-secondary" />
+                      AI Feedback
                     </p>
-                    <p className="text-sm text-foreground/90 leading-relaxed">
+                    <p className="text-sm leading-relaxed text-foreground/90">
                       {evaluation.effectiveFeedback}
                     </p>
                   </div>
                 </div>
-              ) : (
-                <div className="rounded border border-border/60 bg-background/50 p-3">
-                  <p className="font-mono text-sm text-muted-foreground">
-                    <Loader className="mr-2 inline h-4 w-4 animate-spin" />
-                    Evaluation pending. This usually completes in a few moments.
-                  </p>
-                </div>
               )}
-            </div>
-          </Card>
-        ))}
-      </div>
+            </article>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
