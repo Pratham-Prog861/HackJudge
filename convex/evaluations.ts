@@ -2,16 +2,7 @@ import { v } from "convex/values";
 import { action, mutation, query } from "./_generated/server";
 import { api } from "./_generated/api";
 import { scoreValidator, normalizeScores, computeTotal } from "./domain";
-
-type GeminiResponse = {
-  candidates?: Array<{
-    content?: {
-      parts?: Array<{
-        text?: string;
-      }>;
-    };
-  }>;
-};
+import { GoogleGenAI } from "@google/genai";
 
 function parseGithubRepo(url: string): { owner: string; repo: string } | null {
   try {
@@ -144,54 +135,42 @@ async function runGeminiEvaluation(input: {
     return fallbackEvaluation("GEMINI_API_KEY is missing.");
   }
 
-  const prompt = [
-    "You are an expert hackathon judge.",
-    "Score each criterion from 0 to 20 (decimals allowed).",
-    "Return strict JSON only with keys:",
-    "innovation, uiUx, codeQuality, problemSolving, completeness, total, feedback",
-    `Title: ${input.title}`,
-    `Category: ${input.category}`,
-    `Description: ${input.description}`,
-    `GitHub URL: ${input.githubUrl}`,
-    "README content:",
-    input.readme,
-  ].join("\n\n");
-
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          responseMimeType: "application/json",
-        },
-      }),
-    },
-  );
-
-  if (!response.ok) {
-    return fallbackEvaluation(
-      `Gemini request failed with status ${response.status}.`,
-    );
-  }
-
-  const data = (await response.json()) as GeminiResponse;
-  const text =
-    data?.candidates?.[0]?.content?.parts?.[0]?.text ??
-    data?.candidates?.[0]?.content?.parts
-      ?.map((part) => part?.text ?? "")
-      .join("\n") ??
-    "";
-
-  if (!text) {
-    return fallbackEvaluation("Gemini response was empty.");
-  }
-
   try {
+    const client = new GoogleGenAI({ apiKey });
+
+    const prompt = [
+      "You are an expert hackathon judge.",
+      "Score each criterion from 0 to 20 (decimals allowed).",
+      "Return strict JSON only with keys:",
+      "innovation, uiUx, codeQuality, problemSolving, completeness, total, feedback",
+      "The 'feedback' field must be a rich markdown string with the following sections formatted clearly with headers:",
+      "### Suggested Improvements",
+      "Specific actionable advice to enhance the project.",
+      "### Advantages",
+      "What is working well and strengths of the current build.",
+      "### Disadvantages",
+      "Current limitations or weaknesses.",
+      `Title: ${input.title}`,
+      `Category: ${input.category}`,
+      `Description: ${input.description}`,
+      `GitHub URL: ${input.githubUrl}`,
+      "README content:",
+      input.readme,
+    ].join("\n\n");
+
+    const result = await client.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      config: {
+        responseMimeType: "application/json",
+      },
+    });
+
+    const text = result.text;
+    if (!text) {
+      return fallbackEvaluation("Gemini response was empty.");
+    }
+
     const parsed = JSON.parse(text);
     const scores = normalizeScores({
       innovation: parsed.innovation,
@@ -212,8 +191,10 @@ async function runGeminiEvaluation(input: {
           : "Evaluation generated successfully.",
       status: "completed" as const,
     };
-  } catch {
-    return fallbackEvaluation("Failed to parse Gemini JSON response.");
+  } catch (error) {
+    return fallbackEvaluation(
+      `Gemini SDK error: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
   }
 }
 
@@ -230,6 +211,11 @@ export const evaluateSubmission = action({
     if (!submission) {
       return null;
     }
+
+    // Simulated delay to feel like a real person is judging (8-15 seconds)
+    await new Promise((resolve) =>
+      setTimeout(resolve, 8000 + Math.random() * 7000),
+    );
 
     const readme = await tryFetchReadme(submission.githubUrl);
     const result = await runGeminiEvaluation({

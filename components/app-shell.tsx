@@ -13,7 +13,6 @@ import {
   Trophy,
   ShieldCheck,
   Settings,
-  HelpCircle,
   Sparkles,
   Menu,
   X,
@@ -23,11 +22,10 @@ import { useState } from "react";
 const sidebarLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/submit", label: "Projects", icon: FolderOpen },
-  { href: "/dashboard", label: "Evaluation", icon: BarChart3 },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
+  { href: "/evaluation", label: "Evaluation", icon: BarChart3 },
   { href: "/admin", label: "Admin", icon: ShieldCheck },
-  { href: "#", label: "Settings", icon: Settings },
-  { href: "#", label: "Help", icon: HelpCircle },
+  { href: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
 const landingNavLinks = [
@@ -40,7 +38,9 @@ function isInnerPage(pathname: string) {
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/submit") ||
     pathname.startsWith("/leaderboard") ||
-    pathname.startsWith("/admin")
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/evaluation") ||
+    pathname.startsWith("/settings")
   );
 }
 
@@ -82,7 +82,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {/* Branding */}
           <div className="px-5 pt-6 pb-2">
             <Link href="/" className="group flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-container">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-primary to-primary-container">
                 <Sparkles className="h-4 w-4 text-white" />
               </div>
               <div>
@@ -109,7 +109,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   className={cn(
                     "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all",
                     active
-                      ? "bg-gradient-to-r from-primary/20 to-secondary/10 text-foreground"
+                      ? "bg-linear-to-r from-primary/20 to-secondary/10 text-foreground"
                       : "text-muted-foreground hover:bg-[#151926] hover:text-foreground",
                   )}
                 >
@@ -166,7 +166,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             href="/"
             className="flex items-center gap-2 text-lg font-semibold tracking-tight text-foreground"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-container">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-primary to-primary-container">
               <Sparkles className="h-4 w-4 text-white" />
             </div>
             HackJudge

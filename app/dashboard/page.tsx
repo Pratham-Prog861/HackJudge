@@ -15,6 +15,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
 
 function statusTone(status: string) {
   if (status === "completed")
@@ -86,7 +87,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Ready to ship CTA */}
-        <div className="rounded-2xl bg-gradient-to-br from-primary/15 via-[#151926] to-secondary/10 p-6">
+        <div className="rounded-2xl bg-linear-to-br from-primary/15 via-[#151926] to-secondary/10 p-6">
           <Sparkles className="h-5 w-5 text-secondary" />
           <h3 className="mt-3 text-lg font-semibold">Ready to ship?</h3>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -96,7 +97,7 @@ export default function DashboardPage() {
           <Link href="/submit" className="mt-5 inline-flex">
             <Button
               size="sm"
-              className="bg-gradient-to-r from-primary to-[#8d98ff] text-xs font-medium"
+              className="bg-linear-to-r from-primary to-[#8d98ff] text-xs font-medium"
             >
               Submit Project
               <ArrowRight className="ml-1 h-3.5 w-3.5" />
@@ -139,7 +140,7 @@ export default function DashboardPage() {
                   <h3 className="mt-1 text-base font-semibold">
                     {submission.title}
                   </h3>
-                  <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     {submission.description}
                   </p>
                 </div>
@@ -184,13 +185,15 @@ export default function DashboardPage() {
                     ))}
                   </div>
                   <div className="rounded-xl bg-[#0f131e] p-4">
-                    <p className="mb-1 inline-flex items-center gap-2 text-[10px] tracking-wider text-muted-foreground uppercase">
+                    <p className="mb-2 inline-flex items-center gap-2 text-[10px] tracking-wider text-muted-foreground uppercase">
                       <Sparkles className="h-3 w-3 text-secondary" />
                       AI Feedback
                     </p>
-                    <p className="text-sm leading-relaxed text-foreground/90">
-                      {evaluation.effectiveFeedback}
-                    </p>
+                    <div className="prose prose-invert prose-sm max-w-none text-sm leading-relaxed text-foreground/90 space-y-3">
+                      <ReactMarkdown>
+                        {evaluation.effectiveFeedback}
+                      </ReactMarkdown>
+                    </div>
                   </div>
                 </div>
               )}
