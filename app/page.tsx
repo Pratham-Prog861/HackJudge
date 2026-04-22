@@ -13,6 +13,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 const stats = [
   { value: "500+", label: "Organizers" },
@@ -79,7 +80,20 @@ export default function Home() {
   return (
     <div className="space-y-0">
       {/* ── Hero Section ── */}
-      <section className="relative overflow-hidden">
+      <section className="relative min-h-[60vh] overflow-hidden flex items-center justify-center">
+        {/* Background Video */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 h-full w-full object-cover"
+        >
+          <source src="/videos/bg-video.mp4" type="video/mp4" />
+        </video>
+
+        {/* Overlays for depth and readability */}
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,color-mix(in_oklab,var(--color-primary)_30%,transparent),transparent_70%)]" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_40%_40%_at_80%_20%,color-mix(in_oklab,var(--color-secondary)_18%,transparent),transparent_60%)]" />
 
@@ -179,10 +193,12 @@ export default function Home() {
             <div className="absolute bottom-[-10%] right-[-5%] aspect-square w-1/2 bg-primary/5 blur-[80px] transition-colors group-hover:bg-primary/10" />
             {/* Image */}
             <div className="mt-8 overflow-hidden rounded-xl border border-white/5">
-              <img
+              <Image
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuBinFcdFp2xHCJF-1qpHvRt3kUXvylHxjW4rDOn1Tarut-XFvyy4IMxL1VDZTbbAJw3xUkvB7yG1C6BaVz_OTamJVNQIMacEr9v-CVDjqVamxFQtoWnODiS050WFxR9rR10r-lz7p80MP7boyT3-qUqnA-Qh3FS7SCu_b50S-E0vKNFnWl2AZxK6lpc8o7rdzHTnb_g2Nf_HLRy81ODYdqRPFY9-7vUEWEes4irNCTC2pfUllVypA0BitQsfqQqLboQLZRIgP8j7xo"
                 alt="Neural network with glowing nodes"
                 className="h-48 w-full object-cover opacity-40 grayscale transition-all duration-500 group-hover:opacity-60 group-hover:grayscale-0"
+                width={100}
+                height={100}
               />
             </div>
           </div>
@@ -229,15 +245,27 @@ export default function Home() {
               understand their score with comprehensive AI reports.
             </p>
             {/* Skeleton feedback card */}
-            <div className="rounded-xl border border-amber-400/10 bg-[#0a0e18] p-4">
-              <div className="mb-2 flex gap-2">
-                <div className="h-2 w-2 rounded-full bg-amber-300" />
-                <div className="h-2 w-16 rounded-full bg-[#202534]" />
+            <div className="group relative overflow-hidden rounded-xl border border-amber-400/20 bg-[#0a0e18] p-4 transition-all hover:shadow-[0_0_20px_rgba(251,191,36,0.05)]">
+              {/* Header: Minimal & Polished */}
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.4)] animate-pulse" />
+                  <div className="h-1.5 w-24 rounded-full bg-linear-to-r from-[#1a1f2d] to-[#0f131e]" />
+                </div>
+                <div className="h-3 w-3 rounded-full border border-amber-400/10 opacity-40 transition-opacity group-hover:opacity-80" />
               </div>
+
+              {/* Content Bars: Varied & Gradient-rich */}
               <div className="space-y-2">
-                <div className="h-2 w-full rounded-full bg-[#1a1f2d]" />
-                <div className="h-2 w-3/4 rounded-full bg-[#1a1f2d]" />
+                <div className="h-1.5 w-full rounded-full bg-linear-to-r from-[#1a1f2d] to-[#0f131e]" />
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 w-[75%] rounded-full bg-linear-to-r from-[#1a1f2d] to-[#0f131e]" />
+                  <div className="h-1.5 flex-1 rounded-full bg-amber-400/10" />
+                </div>
               </div>
+
+              {/* Subtle ambient glow in corner */}
+              <div className="absolute -right-4 -bottom-4 h-16 w-16 bg-amber-400/5 blur-2xl transition-colors group-hover:bg-amber-400/10" />
             </div>
           </div>
 
@@ -252,10 +280,12 @@ export default function Home() {
               </p>
             </div>
             <div className="aspect-video w-full overflow-hidden rounded-xl bg-black/40 md:w-1/3">
-              <img
+              <Image
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4xfGYCPuVfyr8j542bGgngCFeRotjYgos2DG2KP3_2rYYXw1UCgO6PDBe-Z6s5tpanBEF2Lxqu2jr776rcg-o6hi8O1N9jfSEEmGUcZvulPpWCbovA28ImfgKBMKGCjoib_STFIUVFzXqHIOxbncazLUdaquzHJP1aOrbcuY4JjZmVIwwnst2lC1XHvNcSVibfZk5wzpNccQj_egmzMlynL0VYt0MCouAQaJHVGHKqNy26zLI05DBoDA_NN7b1G52jShRD3hA5_4"
                 alt="Global connectivity map with glowing data points"
                 className="h-full w-full object-cover opacity-50"
+                width={100}
+                height={100}
               />
             </div>
           </div>

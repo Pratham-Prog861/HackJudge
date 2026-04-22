@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { UserButton, SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -13,7 +14,6 @@ import {
   Trophy,
   ShieldCheck,
   Settings,
-  Sparkles,
   Menu,
   X,
 } from "lucide-react";
@@ -82,9 +82,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {/* Branding */}
           <div className="px-5 pt-6 pb-2">
             <Link href="/" className="group flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-primary to-primary-container">
-                <Sparkles className="h-4 w-4 text-white" />
-              </div>
+              <Image
+                src="/logo.png"
+                alt="HackJudge Logo"
+                width={32}
+                height={32}
+                className="rounded-lg"
+              />
               <div>
                 <p className="text-sm font-semibold leading-none text-foreground">
                   HackJudge
@@ -166,9 +170,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             href="/"
             className="flex items-center gap-2 text-lg font-semibold tracking-tight text-foreground"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-primary to-primary-container">
-              <Sparkles className="h-4 w-4 text-white" />
-            </div>
+            <Image
+              src="/logo.png"
+              alt="HackJudge Logo"
+              width={32}
+              height={32}
+              className="rounded-lg"
+            />
             HackJudge
           </Link>
 

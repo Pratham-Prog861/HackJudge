@@ -1,4 +1,5 @@
 import { query, mutation, type MutationCtx } from "./_generated/server";
+import { v } from "convex/values";
 import { parseAdminAllowlist } from "./domain";
 
 async function upsertFromIdentity(
@@ -81,9 +82,63 @@ export const getCurrentUser = query({
       email,
       name: identity.name ?? null,
       imageUrl: identity.pictureUrl ?? null,
+      githubUsername: undefined,
+      bio: undefined,
       isAdmin: email ? allowlist.has(email) : false,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
+  },
+});
+
+export const updateGithubConnection = mutation({
+  args: { githubUsername: v.union(v.string(), v.null()) },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("You must be signed in.");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+
+    if (!user) {
+      throw new Error("User not found.");
+    }
+
+    await ctx.db.patch(user._id, {
+      githubUsername: args.githubUsername ?? undefined,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+export const updateProfile = mutation({
+  args: {
+    name: v.union(v.string(), v.null()),
+    bio: v.union(v.string(), v.null()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("You must be signed in.");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+
+    if (!user) {
+      throw new Error("User not found.");
+    }
+
+    await ctx.db.patch(user._id, {
+      name: args.name ?? null,
+      bio: args.bio ?? undefined,
+      updatedAt: Date.now(),
+    });
   },
 });

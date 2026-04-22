@@ -1,12 +1,13 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { User, Bell, Shield, Palette, Globe, Mail, Save } from "lucide-react";
+import { User, Bell, Shield, Palette, Globe, Save } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { useState } from "react";
+import { useToast } from "@/components/toast-provider";
 
 export default function SettingsPage() {
   const me = useQuery(api.users.getCurrentUser, {});
@@ -40,126 +41,252 @@ export default function SettingsPage() {
           ))}
         </aside>
 
-        <div className="md:col-span-2 space-y-8">
-          {/* Profile Section */}
-          <section className="rounded-2xl bg-[#151926] p-6 border border-border/10">
-            <h2 className="text-lg font-semibold flex items-center gap-2 mb-6 text-foreground">
-              <User className="h-5 w-5 text-primary" />
-              Public Profile
-            </h2>
+        <div className="md:col-span-2">
+          {me ? (
+            <SettingsContent me={me} />
+          ) : (
+            <div className="space-y-8 animate-pulse">
+              <div className="h-64 rounded-2xl bg-[#151926] border border-border/10" />
+              <div className="h-48 rounded-2xl bg-[#151926] border border-border/10" />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
-            <div className="grid gap-6">
-              <div className="grid gap-2">
-                <Label
-                  htmlFor="name"
-                  className="text-xs text-muted-foreground uppercase tracking-wider"
-                >
-                  Full Name
-                </Label>
-                <Input
-                  id="name"
-                  defaultValue={me?.name || ""}
-                  className="bg-[#0f131e] border-border/10 focus:ring-primary/50"
-                  placeholder="Architect Name"
-                />
-              </div>
+interface UserData {
+  name: string | null;
+  email: string | null;
+  githubUsername?: string;
+  bio?: string;
+}
 
-              <div className="grid gap-2">
-                <Label
-                  htmlFor="email"
-                  className="text-xs text-muted-foreground uppercase tracking-wider"
-                >
-                  Email Address
-                </Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="email"
-                    value={me?.email || ""}
-                    disabled
-                    className="bg-[#0f131e] border-border/10 opacity-60 text-muted-foreground flex-1"
-                  />
-                  <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 flex items-center gap-2">
-                    <Shield className="h-3 w-3 text-emerald-400" />
-                    <span className="text-[10px] font-semibold text-emerald-400 uppercase">
-                      Verified
-                    </span>
-                  </div>
-                </div>
-              </div>
+function SettingsContent({ me }: { me: UserData }) {
+  const updateGithub = useMutation(api.users.updateGithubConnection);
+  const updateProfile = useMutation(api.users.updateProfile);
+  const { toast } = useToast();
 
-              <div className="grid gap-2">
-                <Label
-                  htmlFor="bio"
-                  className="text-xs text-muted-foreground uppercase tracking-wider"
-                >
-                  Bio
-                </Label>
-                <Input
-                  id="bio"
-                  className="bg-[#0f131e] border-border/10 focus:ring-primary/50"
-                  placeholder="Brief description of your expertise..."
-                />
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [githubInput, setGithubInput] = useState("");
+  const [name, setName] = useState(me.name || "");
+  const [bio, setBio] = useState(me.bio || "");
+
+  const handleConnect = async () => {
+    if (!githubInput.trim()) return;
+    try {
+      await updateGithub({ githubUsername: githubInput.trim() });
+      toast({
+        title: "GitHub Linked",
+        description: `Successfully connected to ${githubInput}`,
+        variant: "success",
+      });
+      setIsConnecting(false);
+      setGithubInput("");
+    } catch {
+      toast({
+        title: "Connection Failed",
+        description: "Failed to link GitHub account.",
+        variant: "error",
+      });
+    }
+  };
+
+  const handleDisconnect = async () => {
+    try {
+      await updateGithub({ githubUsername: null });
+      toast({
+        title: "GitHub Unlinked",
+        description: "Your GitHub connection has been removed.",
+        variant: "success",
+      });
+    } catch {
+      toast({
+        title: "Action Failed",
+        description: "Could not remove GitHub connection.",
+        variant: "error",
+      });
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      await updateProfile({ name, bio });
+      toast({
+        title: "Settings Saved",
+        description: "Your profile has been updated.",
+        variant: "success",
+      });
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to save settings.",
+        variant: "error",
+      });
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Profile Section */}
+      <section className="rounded-2xl bg-[#151926] p-6 border border-border/10">
+        <h2 className="text-lg font-semibold flex items-center gap-2 mb-6 text-foreground">
+          <User className="h-5 w-5 text-primary" />
+          Public Profile
+        </h2>
+
+        <div className="grid gap-6">
+          <div className="grid gap-2">
+            <Label
+              htmlFor="name"
+              className="text-xs text-muted-foreground uppercase tracking-wider"
+            >
+              Full Name
+            </Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="bg-[#0f131e] border-border/10 focus:ring-primary/50"
+              placeholder="Architect Name"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label
+              htmlFor="email"
+              className="text-xs text-muted-foreground uppercase tracking-wider"
+            >
+              Email Address
+            </Label>
+            <div className="flex gap-2">
+              <Input
+                id="email"
+                value={me.email || ""}
+                disabled
+                className="bg-[#0f131e] border-border/10 opacity-60 text-muted-foreground flex-1"
+              />
+              <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 flex items-center gap-2">
+                <Shield className="h-3 w-3 text-emerald-400" />
+                <span className="text-[10px] font-semibold text-emerald-400 uppercase">
+                  Verified
+                </span>
               </div>
             </div>
-          </section>
+          </div>
 
-          {/* Social Connections */}
-          <section className="rounded-2xl bg-[#151926] p-6 border border-border/10">
-            <h2 className="text-lg font-semibold flex items-center gap-2 mb-6 text-foreground">
-              <Globe className="h-5 w-5 text-primary" />
-              Social Connections
-            </h2>
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-xl bg-[#0f131e] border border-border/5">
-                <div className="flex items-center gap-3">
-                  <Globe className="h-5 w-5" />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">
-                      GitHub
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Connected as{" "}
-                      {me?.name?.toLowerCase().replace(" ", "") || "user"}
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs border-border/20"
-                >
-                  Disconnect
-                </Button>
-              </div>
-
-              <div className="flex items-center justify-between p-4 rounded-xl bg-[#0f131e] border border-border/5">
-                <div className="flex items-center gap-3">
-                  <Mail className="h-5 w-5" />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">
-                      Email Notifications
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Receive weekly score updates
-                    </p>
-                  </div>
-                </div>
-                <Switch checked />
-              </div>
-            </div>
-          </section>
-
-          <div className="flex justify-end gap-3">
-            <Button variant="outline" className="text-xs border-border/20">
-              Discard Changes
-            </Button>
-            <Button className="bg-linear-to-r from-primary to-[#8d98ff] text-xs font-medium px-6">
-              <Save className="mr-2 h-4 w-4" />
-              Save Preferences
-            </Button>
+          <div className="grid gap-2">
+            <Label
+              htmlFor="bio"
+              className="text-xs text-muted-foreground uppercase tracking-wider"
+            >
+              Bio
+            </Label>
+            <Input
+              id="bio"
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              className="bg-[#0f131e] border-border/10 focus:ring-primary/50"
+              placeholder="Brief description of your expertise..."
+            />
           </div>
         </div>
+      </section>
+
+      {/* Social Connections */}
+      <section className="rounded-2xl bg-[#151926] p-6 border border-border/10">
+        <h2 className="text-lg font-semibold flex items-center gap-2 mb-6 text-foreground">
+          <Globe className="h-5 w-5 text-primary" />
+          Social Connections
+        </h2>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 rounded-xl bg-[#0f131e] border border-border/5">
+            <div className="flex items-center gap-3">
+              <Globe className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <p className="text-sm font-medium text-foreground">GitHub</p>
+                <p className="text-xs text-muted-foreground">
+                  {me.githubUsername ? (
+                    <>
+                      Connected as{" "}
+                      <span className="text-secondary font-medium">
+                        {me.githubUsername}
+                      </span>
+                    </>
+                  ) : (
+                    "Not connected"
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {me.githubUsername ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDisconnect}
+                className="text-xs border-border/20 text-red-400/80 hover:text-red-400 hover:bg-red-400/5 hover:border-red-400/20"
+              >
+                Disconnect
+              </Button>
+            ) : isConnecting ? (
+              <div className="flex items-center gap-2">
+                <Input
+                  placeholder="Username"
+                  value={githubInput}
+                  onChange={(e) => setGithubInput(e.target.value)}
+                  className="h-8 text-xs bg-[#0a0e18] border-border/10 w-32"
+                />
+                <Button
+                  size="sm"
+                  onClick={handleConnect}
+                  className="h-8 text-xs bg-secondary/10 text-secondary hover:bg-secondary/20"
+                >
+                  Link
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsConnecting(false)}
+                  className="h-8 text-xs"
+                >
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsConnecting(true)}
+                className="text-xs border-border/20"
+              >
+                Connect
+              </Button>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <div className="flex justify-end gap-3">
+        <Button
+          variant="outline"
+          onClick={() => {
+            setName(me.name || "");
+            setBio(me.bio || "");
+          }}
+          className="text-xs border-border/20"
+        >
+          Discard Changes
+        </Button>
+        <Button
+          onClick={handleSave}
+          className="bg-linear-to-r from-primary to-[#8d98ff] text-xs font-medium px-6"
+        >
+          <Save className="mr-2 h-4 w-4" />
+          Save Preferences
+        </Button>
       </div>
     </div>
   );

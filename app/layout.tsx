@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   description:
     "AI-assisted hackathon judging platform built with Next.js, Clerk, and Convex.",
   icons: {
-    icon: "/convex.svg",
+    icon: "/logo.png",
   },
 };
 
